@@ -1,0 +1,48 @@
+# AWS discovery
+function Get-AwsInstanceDetails {
+    param(
+        [Parameter(Mandatory = $true)]
+        [System.Object]
+        $InputInstance
+    )
+
+    $AwsCompositeJsonData = @{}
+    try {
+        # Configure AWS region
+        Set-Loginfo -LogMessage "Configuring AWS region $($InputInstance.awsRegion)"
+        Set-AWSCredential -AccessKey $InputInstance.awsAccessKey -SecretKey $InputInstance.awsSecretKey -StoreAs Default
+        Set-DefaultAWSRegion -Region $InputInstance.awsRegion
+
+        $ResourceSpecFilePath = [Environment]::GetFolderPath("MyDocuments") + "\Configuration\$($InputInstance.vmName)-Aws-Composit.json"
+
+        Set-Loginfo -LogMessage "Creating AWS composite JSON for instance $($InputInstance.instanceID)"
+
+        # Get AWS instance info
+        Set-Loginfo -LogMessage "Getting AWS instance info for $($InputInstance.instanceID)"
+        $AwsInstance = aws ec2 describe-instances --instance-id $InputInstance.instanceID | ConvertFrom-Json
+        Set-Loginfo -LogMessage "Successfully retrieved AWS instance info for $($InputInstance.instanceID)"
+
+        # Get AWS VPC info
+        Set-Loginfo -LogMessage "Getting AWS VPC info for $($AwsInstance.Reservations[0].Instances[0].VpcId)"
+        $AwsVpc = aws ec2 describe-vpcs --vpc-ids $AwsInstance.Reservations[0].Instances[0].VpcId | ConvertFrom-Json
+        Set-Loginfo -LogMessage "Successfully retrieved AWS VPC info for $($AwsInstance.Reservations[0].Instances[0].VpcId)"
+
+        # Get AWS Security Groups info
+        Set-Loginfo -LogMessage "Getting AWS Security Groups info for $($InputInstance.instanceID)"
+        $AwsSecurityGroups = aws ec2 describe-security-groups | ConvertFrom-Json
+        Set-Loginfo -LogMessage "Successfully retrieved AWS Security Groups info for $($InputInstance.instanceID)"
+
+        # Filter AWS Security Groups
+        $AwsSecurityGroups = $AwsSecurityGroups.SecurityGroups | Where-Object {
+            $_.VpcId -eq $AwsInstance.Reservations[0].Instances[0].VpcId -and
+            $_.GroupName -notin @('SpectrumGeneral', 'From.DCI.Internal', 'Allowed Inbound')
+        }
+
+        $InstanceNSGs = $AwsInstance.Reservations[0].Instances[0].SecurityGroups
+        $FinalNSGList = @()
+
+      
+    } catch {
+        Write-Error "An error occurred: $_"
+    }
+}
