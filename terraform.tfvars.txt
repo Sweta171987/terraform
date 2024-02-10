@@ -1,0 +1,8 @@
+resource_group_name          = "example-resources"
+location                     = "East US"
+app_service_plan_name        = "example-app-service-plan"
+web_app_name                 = "example-web-app"
+sql_server_name              = "example-sql-server"
+sql_server_admin_username    = "admin"
+sql_server_admin_password    = "Password123!@#"
+sql_database_name            = "example-sql-database"
