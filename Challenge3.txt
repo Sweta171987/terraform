@@ -1,0 +1,44 @@
+# Define the function
+def get_value_from_nested_object(obj, key):
+    # Split the key string into a list of keys
+    keys = key.split('/')
+    
+    # Initialize current_obj to the root of the nested object
+    current_obj = obj
+    
+    # Iterate through each key in the list
+    for k in keys:
+        # Check if the current key exists in the current object
+        if k in current_obj:
+            # Update current_obj to the value associated with the current key
+            current_obj = current_obj[k]
+        else:
+            # If the key is not found, return None
+            return None
+    
+    # Return the final value
+    return current_obj
+
+# Example nested object
+object1 = {"a": {"b": {"c": "d"}}}
+
+# Example key
+key1 = "a/b/c"
+
+# Call the function with the nested object and key
+value1 = get_value_from_nested_object(object1, key1)
+
+# Print the result
+print(f"Value for key '{key1}': {value1}")  # Output: Value for key 'a/b/c': d
+
+# Another example nested object
+object2 = {"x": {"y": {"z": "a"}}}
+
+# Another example key
+key2 = "x/y/z"
+
+# Call the function with the second nested object and key
+value2 = get_value_from_nested_object(object2, key2)
+
+# Print the result
+print(f"Value for key '{key2}': {value2}")  # Output: Value for key 'x/y/z': a
